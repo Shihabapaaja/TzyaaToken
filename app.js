@@ -121,11 +121,13 @@ app.post('/add', authMiddlewareUser, async (req, res) => {
 app.post('/admin-add', async (req, res) => {
   let { token } = req.body;
   const data = await fetchData();
-  token = token.replace(/[^0-9:-a-zA-Z%._+~#=]/g, "")
-  if (token.length < 10 || token.length > 40) {
-  req.session.message = 'token tidak valid';
-  return res.redirect('/admin');
+  const tokenRegex = /^[0-9]{7,12}:[A-Za-z0-9_\-]{30,60}$/;
+
+  if (!tokenRegex.test(token)) {
+    req.session.message = 'token tidak valid';
+    return res.redirect('/admin');
   }
+
   const alreadyExists = data.find(item => item.token === token);
   if (alreadyExists) {
     req.session.message = 'token sudah terdaftar';
@@ -134,6 +136,7 @@ app.post('/admin-add', async (req, res) => {
 
   data.push({ token, status: 'active' });
   await updateData(data);
+
   req.session.message = 'Berhasil menambah token ✓';
   res.redirect('/admin');
 });
