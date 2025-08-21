@@ -122,7 +122,7 @@ app.post('/admin-add', async (req, res) => {
   let { token } = req.body;
   const data = await fetchData();
   token = token.replace(/[^0-9a-zA-Z-:_]/g, "")
-  if (token.length < 8 || token.length > 15) {
+  if (token.length < 10 || token.length > 40) {
   req.session.message = 'token tidak valid';
   return res.redirect('/admin');
   }
