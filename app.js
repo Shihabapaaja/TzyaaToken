@@ -121,7 +121,7 @@ app.post('/add', authMiddlewareUser, async (req, res) => {
 app.post('/admin-add', async (req, res) => {
   let { token } = req.body;
   const data = await fetchData();
-  token = token.replace(/[^0-9]/g, "")
+  token = token.replace(/[^0-9a-zA-Z]/g, "")
   if (token.length < 8 || token.length > 15) {
   req.session.message = 'token tidak valid';
   return res.redirect('/admin');
