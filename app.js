@@ -123,12 +123,15 @@ app.post('/add', authMiddlewareUser, async (req, res) => {
 app.post('/admin-add', async (req, res) => {
   let { token } = req.body;
   const data = await fetchData();
-  // Bersihkan token dari spasi / karakter aneh
+
+  // Bersihkan token dari spasi
   token = token.trim().replace(/\s+/g, "");
-  // Regex Telegram bot token
+
+  // Regex Telegram Bot Token
   const telegramRegex = /^[0-9]{6,12}:[A-Za-z0-9_-]{30,60}$/;
-  // Regex WhatsApp number (internasional, 6–15 digit angka)
+  // Regex WhatsApp number (6–15 digit angka internasional)
   const whatsappRegex = /^[0-9]{6,15}$/;
+
   let type = null;
   if (telegramRegex.test(token)) {
     type = "telegram";
@@ -138,18 +141,26 @@ app.post('/admin-add', async (req, res) => {
     req.session.message = "token/nomor tidak valid";
     return res.redirect("/admin");
   }
+
   // Cek apakah sudah ada
   const alreadyExists = data.find(item => item.token === token);
   if (alreadyExists) {
     req.session.message = "token/nomor sudah terdaftar";
     return res.redirect("/admin");
   }
-  // Simpan data baru
-  data.push({ token, type, status: "active" });
+
+  // Simpan tetap kompatibel
+  data.push({
+    token,
+    status: "active",
+    ...(type && { type }) // tambahin type kalau ada
+  });
   await updateData(data);
+
   req.session.message = `Berhasil menambah ${type} ✓`;
   res.redirect("/admin");
 });
+
 app.get('/login-admin', (req, res) => {
   const message = req.session.message;
   req.session.message = null;
