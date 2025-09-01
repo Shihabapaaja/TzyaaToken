@@ -101,20 +101,22 @@ app.get('/', authMiddlewareUser, async (req, res) => {
 app.post('/add', authMiddlewareUser, async (req, res) => {
   let { token } = req.body;
   const data = await fetchData();
-  token = token.replace(/[^0-9a-zA-Z]/g, "")
-  if (token.length < 8 || token.length > 15) {
-  req.session.message = 'token tidak valid';
-  return res.redirect('/');
+  token = token.trim();
+  const telegramRegex = /^\d{7,12}:[A-Za-z0-9_-]{30,50}$/;
+  const whatsappRegex = /^\d{6,15}$/;
+  if (!telegramRegex.test(token) && !whatsappRegex.test(token)) {
+    req.session.message = 'Token/nomor tidak valid';
+    return res.redirect('/');
   }
   const alreadyExists = data.find(item => item.token === token);
   if (alreadyExists) {
-    req.session.message = 'token sudah terdaftar';
+    req.session.message = 'Token/nomor sudah terdaftar';
     return res.redirect('/');
   }
-
-  data.push({ token, status: 'active' });
+  let type = telegramRegex.test(token) ? 'telegram' : 'whatsapp';
+  data.push({ token, type, status: 'active' });
   await updateData(data);
-  req.session.message = 'Berhasil menambah token ✓';
+  req.session.message = `Berhasil menambah ${type} ✓`;
   res.redirect('/');
 });
 
