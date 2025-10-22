@@ -142,22 +142,37 @@ app.post('/admin-add', async (req, res) => {
     return res.redirect("/admin");
   }
 
-  // Cek apakah sudah ada
+  // Cek apakah token sudah ada
   const alreadyExists = data.find(item => item.token === token);
   if (alreadyExists) {
     req.session.message = "token/nomor sudah terdaftar";
     return res.redirect("/admin");
   }
 
-  // Simpan tetap kompatibel
+  // Fungsi generate API Key unik
+  function generateApiKey() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < 15; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return `tzyaa-${result}`;
+  }
+
+  // Generate API baru
+  const apiKey = generateApiKey();
+
+  // Simpan token + API ke data
   data.push({
     token,
+    api: apiKey,
     status: "active",
-    ...(type && { type }) // tambahin type kalau ada
+    ...(type && { type })
   });
+
   await updateData(data);
 
-  req.session.message = `Berhasil menambah ${type} ✓`;
+  req.session.message = `Berhasil menambah ${type} ✓\nAPI: ${apiKey}`;
   res.redirect("/admin");
 });
 
